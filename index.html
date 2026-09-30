@@ -3,32 +3,42 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="stylesheet" href="src/style.css" />
+    <link rel="stylesheet" href="src/styles/main.css" />
+    <script type="module" src="src/main.ts"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>plain-html-calculator</title>
   </head>
   <body>
     <div class="background">
-      <div class="calculator">
-        <input type="text" class="calculator-screen" disabled />
-        <div class="calculator-keys">
-          <button type="button" class="operator" value="+">+</button>
-          <button type="button" class="operator" value="-">-</button>
-          <button type="button" class="operator" value="*">&times;</button>
-          <button type="button" class="operator" value="/">&divide;</button>
-          <button type="button" value="7">7</button>
-          <button type="button" value="8">8</button>
-          <button type="button" value="9">9</button>
-          <button type="button" value="4">4</button>
-          <button type="button" value="5">5</button>
-          <button type="button" value="6">6</button>
-          <button type="button" value="1">1</button>
-          <button type="button" value="2">2</button>
-          <button type="button" value="3">3</button>
-          <button type="button" value="0">0</button>
-          <button type="button" class="decimal" value=".">.</button>
-          <button type="button" class="all-clear" value="all-clear">AC</button>
-          <button type="button" class="equal-sign operator" value="=">=</button>
+      <div class="calculator-wrapper">
+        <div class="calculator-top">
+          <input type="text" class="calculator-screen" disabled />
+        </div>
+        <div class="calculator-bottom">
+          <div class="calculator-keys-wrapper">
+            <div class="calculator-input-keys">
+              <button class="standard-btn" type="button" value="7">7</button>
+              <button class="standard-btn" type="button" value="8">8</button>
+              <button class="standard-btn" type="button" value="9">9</button>
+              <button class="standard-btn" type="button" value="4">4</button>
+              <button class="standard-btn" type="button" value="5">5</button>
+              <button class="standard-btn" type="button" value="6">6</button>
+              <button class="standard-btn" type="button" value="1">1</button>
+              <button class="standard-btn" type="button" value="2">2</button>
+              <button class="standard-btn" type="button" value="3">3</button>
+              <button class="standard-btn" type="button" value="0">0</button>
+              <button class="standard-btn" type="button" value="00">00</button>
+              <button class="standard-btn" type="button" value=".">.</button>
+            </div>
+            <div class="calculator-operand-keys">
+              <button class="standard-btn" type="button" class="operator" value="%">%</button>
+              <button class="standard-btn" type="button" class="operator" value="/">&divide;</button>
+              <button class="standard-btn" type="button" class="operator" value="*">&times;</button>
+              <button class="standard-btn" type="button" class="operator" value="-">-</button>
+              <button type="button" class="operator" value="+">+</button>
+              <button type="button" id="equals-button" class="equal-sign operator" value="=">=</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
