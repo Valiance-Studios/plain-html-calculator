@@ -1,6 +1,6 @@
-import {wrapError} from "@lib/error";
+import {wrapError} from '@lib/error';
 
-let currentExpression = "";
+let currentExpression = '';
 
 function setCurrentExpression(expression: string) {
   currentExpression = expression;
@@ -15,7 +15,7 @@ function evaluateCurrentExpression(): string {
     const result = eval(currentExpression);
     return result.toString();
   } catch (error) {
-    throw wrapError(error, "Failed to evaluate expression");
+    throw wrapError(error, 'Failed to evaluate expression');
   }
 }
 
