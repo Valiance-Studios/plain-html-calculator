@@ -1,7 +1,7 @@
-.background {
+body {
+  background-color: #313030;
   width: 100vw;
   height: 100vh;
-  background-color: #313030;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -11,25 +11,31 @@
   background-color: #a8a8a8;
   border-radius: 5px;
 
-  height: 50vh;
-  width: 30vw;
+  min-height: 500px;
+  max-height: 500px;
+
+  min-width: 500px;
+  max-width: 500px;
 }
 
 .calculator-top {
   background-color: #1e1e1e;
   padding: 15px;
+  height: 100px;
   border: none;
   border-radius: 5px;
 }
 
 .calculator-bottom {
   background-color: #a8a8a8;
+  border-radius: 5px;
+  height: 400px;
   padding: 15px;
 }
 
 .calculator-screen {
   width: 99%;
-  height: 70px;
+  height: 100px;
   text-align: right;
   font-size: 1.5em;
   border: none;
@@ -38,29 +44,31 @@
 }
 
 .calculator-keys-wrapper {
-  display: flex;
-  justify-content: space-around;
+  height: inherit;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(6, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  grid-template-areas:
+  "all-clear num-7 num-8 num-9 operator-percent operator-divide"
+  "single-delete num-4 num-5 num-6 operator-multiply operator-minus"
+  "invert-sign num-1 num-2 num-3 operator-plus operator-equals"
+  "invert-sign num-0 num-00 num-decimal operator-plus operator-equals";
 }
 
-.standard-btn {
-  background-color: #2b2b2b;
+.btn {
   color: #ffffff;
   border: none;
   border-radius: 5px;
   padding: 10px;
-  font-size: 1em;
+  font-size: 1.5em;
   cursor: pointer;
-  height: 50px;
-  width: 50px;
-}
 
-.calculator-input-keys {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  width: 30%;
-}
+  &.standard {
+    background-color: #2b2b2b;
+  }
 
-.calculator-operand-keys {
-  display: flex;
+  &.operator {
+    background-color: #ff9500;
+  }
 }
