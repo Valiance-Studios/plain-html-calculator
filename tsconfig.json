@@ -6,6 +6,9 @@
     "types": ["vite/client"],
     "allowArbitraryExtensions": true,
     "skipLibCheck": true,
+    "paths": {
+      "@lib/*": ["./lib/*"],
+    },
 
     /* Bundler mode */
     "moduleResolution": "bundler",

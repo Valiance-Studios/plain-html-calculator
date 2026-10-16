@@ -1,0 +1,109 @@
+body {
+  background-color: #313030;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.calculator-wrapper {
+  background-color: #a8a8a8;
+  border-radius: 5px;
+
+  min-height: 500px;
+  max-height: 500px;
+
+  min-width: 500px;
+  max-width: 500px;
+}
+
+.calculator-top {
+  background-color: #1e1e1e;
+  padding: 15px;
+  height: 100px;
+  border: none;
+  border-radius: 5px;
+}
+
+.calculator-display {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-end;
+  background-color: #5e5e5e;
+  border-radius: 8px;
+  padding: 12px 16px;
+  min-height: 100px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.display-secondary {
+  color: #a0a0a0;
+  font-size: 0.95rem;
+  min-height: 1.25rem; /* Reserves space so layout doesn't collapse when empty */
+  margin-bottom: 4px;
+  word-break: break-all;
+  white-space: nowrap;
+}
+
+.display-primary {
+  color: #ffffff;
+  font-size: 2.5rem;
+  font-weight: 600;
+  line-height: 1.1;
+  word-break: break-all;
+  white-space: nowrap;
+}
+
+.calculator-bottom {
+  background-color: #a8a8a8;
+  border-radius: 5px;
+  height: 400px;
+  padding: 15px;
+}
+
+.calculator-keys-wrapper {
+  height: inherit;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(6, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  grid-template-areas:
+  "all-clear num-7 num-8 num-9 operator-percent operator-divide"
+  "single-delete num-4 num-5 num-6 operator-multiply operator-minus"
+  "invert-sign num-1 num-2 num-3 operator-plus operator-equals"
+  "invert-sign num-0 num-00 num-decimal operator-plus operator-equals";
+}
+
+.btn {
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px;
+  font-size: 1.5em;
+  cursor: pointer;
+
+  &.standard {
+    background-color: #2b2b2b;
+  }
+
+  &.standard:hover {
+    background-color: #3a3a3a;
+  }
+  &.standard:active {
+    background-color: #2e2e2e;
+  }
+
+  &.operator {
+    background-color: #ff9500;
+  }
+
+  &.operator:hover {
+    background-color: #e68a00;
+  }
+  &.operator:active {
+    background-color: #cc7a00;
+  }
+}
