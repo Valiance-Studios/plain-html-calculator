@@ -1,3 +1,4 @@
-import {initCalculatorEvents} from './ui';
+import {initKeyboardEvents, initButtonEvents} from './ui';
 
-initCalculatorEvents();
+initKeyboardEvents();
+initButtonEvents();

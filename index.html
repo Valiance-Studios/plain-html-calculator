@@ -11,31 +11,36 @@
   <body>
     <div class="calculator-wrapper">
       <div class="calculator-top">
-        <input type="text" class="calculator-screen" disabled />
+        <div class="calculator-display" id="calculator-display">
+          <!-- Secondary display for current expression context (e.g., "1234 +") -->
+          <div class="display-secondary" id="display-secondary"></div>
+          <!-- Primary display for active input / computed result -->
+          <div class="display-primary" id="display-primary">0</div>
+        </div>
       </div>
       <div class="calculator-bottom">
         <div class="calculator-keys-wrapper">
-          <button id="btn-all-clear" class="btn standard" style="grid-area: all-clear" type="button" value="all-clear">AC</button>
-          <button id="btn-single-delete" class="btn standard" style="grid-area: single-delete" type="button" value="single-delete">DEL</button>
-          <button id="btn-invert-sign" class="btn standard" style="grid-area: invert-sign" type="button" value="invert-sign">+/-</button>
-          <button id="btn-num-7" class="btn standard" style="grid-area: num-7" type="button" value="7">7</button>
-          <button id="btn-num-8" class="btn standard" style="grid-area: num-8" type="button" value="8">8</button>
-          <button id="btn-num-9" class="btn standard" style="grid-area: num-9" type="button" value="9">9</button>
-          <button id="btn-num-4" class="btn standard" style="grid-area: num-4" type="button" value="4">4</button>
-          <button id="btn-num-5" class="btn standard" style="grid-area: num-5" type="button" value="5">5</button>
-          <button id="btn-num-6" class="btn standard" style="grid-area: num-6" type="button" value="6">6</button>
-          <button id="btn-num-1" class="btn standard" style="grid-area: num-1" type="button" value="1">1</button>
-          <button id="btn-num-2" class="btn standard" style="grid-area: num-2" type="button" value="2">2</button>
-          <button id="btn-num-3" class="btn standard" style="grid-area: num-3" type="button" value="3">3</button>
-          <button id="btn-num-0" class="btn standard" style="grid-area: num-0" type="button" value="0">0</button>
-          <button id="btn-num-00" class="btn standard" style="grid-area: num-00" type="button" value="00">00</button>
-          <button id="btn-num-decimal" class="btn standard" style="grid-area: num-decimal" type="button" value=".">.</button>
-          <button id="btn-op-percent" class="btn operator" style="grid-area: operator-percent" type="button" value="%">%</button>
-          <button id="btn-op-divide" class="btn operator" style="grid-area: operator-divide" type="button" value="/">&divide;</button>
-          <button id="btn-op-multiply" class="btn operator" style="grid-area: operator-multiply" type="button" value="*">&times;</button>
-          <button id="btn-op-minus" class="btn operator" style="grid-area: operator-minus" type="button" value="-">-</button>
-          <button id="btn-op-plus" class="btn operator" style="grid-area: operator-plus" type="button" value="+">+</button>
-          <button id="btn-op-equals" class="btn operator" style="grid-area: operator-equals" id="equals-button" type="button" value="=">=</button>
+          <button id="btn-all-clear" class="btn standard" style="grid-area: all-clear" type="button" data-type="action" value="clear">AC</button>
+          <button id="btn-single-delete" class="btn standard" style="grid-area: single-delete" type="button" data-type="action" value="delete">DEL</button>
+          <button id="btn-invert-sign" class="btn standard" style="grid-area: invert-sign" type="button" data-type="action" value="invert">+/-</button>
+          <button id="btn-num-7" class="btn standard" style="grid-area: num-7" type="button" data-type="number" value="7">7</button>
+          <button id="btn-num-8" class="btn standard" style="grid-area: num-8" type="button" data-type="number" value="8">8</button>
+          <button id="btn-num-9" class="btn standard" style="grid-area: num-9" type="button" data-type="number" value="9">9</button>
+          <button id="btn-num-4" class="btn standard" style="grid-area: num-4" type="button" data-type="number" value="4">4</button>
+          <button id="btn-num-5" class="btn standard" style="grid-area: num-5" type="button" data-type="number" value="5">5</button>
+          <button id="btn-num-6" class="btn standard" style="grid-area: num-6" type="button" data-type="number" value="6">6</button>
+          <button id="btn-num-1" class="btn standard" style="grid-area: num-1" type="button" data-type="number" value="1">1</button>
+          <button id="btn-num-2" class="btn standard" style="grid-area: num-2" type="button" data-type="number" value="2">2</button>
+          <button id="btn-num-3" class="btn standard" style="grid-area: num-3" type="button" data-type="number" value="3">3</button>
+          <button id="btn-num-0" class="btn standard" style="grid-area: num-0" type="button" data-type="number" value="0">0</button>
+          <button id="btn-num-00" class="btn standard" style="grid-area: num-00" type="button" data-type="number" value="00">00</button>
+          <button id="btn-num-decimal" class="btn standard" style="grid-area: num-decimal" type="button" data-type="number" value=".">.</button>
+          <button id="btn-op-percent" class="btn operator" style="grid-area: operator-percent" type="button" data-type="operator" value="%">%</button>
+          <button id="btn-op-divide" class="btn operator" style="grid-area: operator-divide" type="button" data-type="operator" value="/">&divide;</button>
+          <button id="btn-op-multiply" class="btn operator" style="grid-area: operator-multiply" type="button" data-type="operator" value="*">&times;</button>
+          <button id="btn-op-minus" class="btn operator" style="grid-area: operator-minus" type="button" data-type="operator" value="-">-</button>
+          <button id="btn-op-plus" class="btn operator" style="grid-area: operator-plus" type="button" data-type="operator" value="+">+</button>
+          <button id="btn-op-equals" class="btn operator" style="grid-area: operator-equals" type="button" data-type="operator" value="calculate">=</button>
         </div>
       </div>
     </div>
