@@ -1,4 +1,5 @@
-import {initKeyboardEvents, initButtonEvents} from './ui';
+import {Calculator} from './calculatorClass';
+import {CalculatorUI} from './calculatorUIClass';
 
-initKeyboardEvents();
-initButtonEvents();
+const calculator = new Calculator();
+new CalculatorUI(calculator);

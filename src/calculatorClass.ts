@@ -114,14 +114,14 @@ export class Calculator {
   }
 
   /**
-   * Primary Display: The number currently being entered or the calculation result.
+   * Returns the number currently being entered or the calculation result.
    */
   public getDisplayValue(): string {
     return this.currentOperand;
   }
 
   /**
-   * Expression Display: Represents the full formula currently being built.
+   * Returns the full formula currently being built for the expression display.
    */
   public getExpressionValue(): string {
     // State 1: An operation is active (e.g., "1234 +" or "1234 + 4567")
