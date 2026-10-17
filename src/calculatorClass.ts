@@ -20,14 +20,17 @@ export class Calculator {
     this.lastOperation = null;
     this.lastOperand = null;
     this.shouldResetScreen = false;
+    this.isEvaluated = false;
   }
 
   public delete(): void {
     if (this.shouldResetScreen) return;
+
     if (this.currentOperand.length === 1 || this.currentOperand === 'Error') {
       this.currentOperand = '0';
       return;
     }
+
     this.currentOperand = this.currentOperand.slice(0, -1);
   }
 
@@ -58,10 +61,10 @@ export class Calculator {
 
     this.previousOperand = this.currentOperand;
     this.activeOperation = operation;
-    // Clear repeat-equals memory when a new operation is started
     this.lastOperation = null;
     this.lastOperand = null;
     this.shouldResetScreen = true;
+    this.isEvaluated = false;
   }
 
   public compute(): void {
@@ -113,6 +116,16 @@ export class Calculator {
     this.isEvaluated = true; // Mark evaluation complete
   }
 
+  public invertSign(): void {
+    if (this.currentOperand === 'Error' || this.currentOperand === '0') return;
+
+    if (this.currentOperand.startsWith('-')) {
+      this.currentOperand = this.currentOperand.slice(1);
+    } else {
+      this.currentOperand = `-${this.currentOperand}`;
+    }
+  }
+
   /**
    * Returns the number currently being entered or the calculation result.
    */
@@ -121,7 +134,7 @@ export class Calculator {
   }
 
   /**
-   * Returns the full formula currently being built for the expression display.
+   * Returns the full formula currently being built.
    */
   public getExpressionValue(): string {
     // State 1: An operation is active (e.g., "1234 +" or "1234 + 4567")
@@ -148,12 +161,15 @@ export class Calculator {
 
   private getSymbol(op: Operation): string {
     switch (op) {
-      case '*':
+      case '*': {
         return '×';
-      case '/':
+      }
+      case '/': {
         return '÷';
-      default:
+      }
+      default: {
         return op || '';
+      }
     }
   }
 }
