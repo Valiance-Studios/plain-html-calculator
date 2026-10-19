@@ -10,6 +10,14 @@ export class CalculatorUI {
     this.primaryDisplay = document.getElementById('display-primary')!;
     this.secondaryDisplay = document.getElementById('display-secondary')!;
 
+    if (!this.primaryDisplay) {
+      throw new Error('Cannot initialize CalculatorUI: "#display-primary" query returned null.');
+    }
+
+    if (!this.secondaryDisplay) {
+      throw new Error('Cannot initialize CalculatorUI: "#display-secondary" query returned null.');
+    }
+
     this.initEventListeners();
     this.updateDisplay();
   }
@@ -23,11 +31,7 @@ export class CalculatorUI {
     keysWrapper.addEventListener('click', (event: Event) => {
       const target = (event.target as HTMLElement).closest('button');
       if (!target) return;
-
-      const type = target.dataset.type;
-      const value = target.value;
-
-      this.handleInput(type, value);
+      this.handleInput(target.dataset.type, target.value);
     });
 
     window.addEventListener('keydown', (event: KeyboardEvent) => {
@@ -44,24 +48,28 @@ export class CalculatorUI {
    */
   private handleInput(type: string | undefined, value: string): void {
     switch (type) {
-      case 'number':
+      case 'number': {
         this.calculator.appendNumber(value);
         break;
+      }
 
-      case 'operator':
+      case 'operator': {
         this.calculator.chooseOperation(value as Operation);
         break;
+      }
 
-      case 'action':
+      case 'action': {
         if (value === 'clear' || value === 'all-clear') {
           this.calculator.clear();
         } else if (value === 'delete' || value === 'single-delete') {
           this.calculator.delete();
         } else if (value === 'calculate' || value === '=') {
           this.calculator.compute();
+        } else if (value === 'invert-sign') {
+          this.calculator.invertSign();
         }
-
         break;
+      }
     }
 
     this.updateDisplay();
