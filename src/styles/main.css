@@ -1,21 +1,13 @@
 body {
   background-color: #313030;
-  width: 100vw;
-  height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: center;
 }
 
 .calculator-wrapper {
   background-color: #a8a8a8;
   border-radius: 5px;
-
-  min-height: 500px;
-  max-height: 500px;
-
-  min-width: 500px;
-  max-width: 500px;
+  width: 500px;
 }
 
 .calculator-top {
