@@ -1,6 +1,7 @@
-import {Calculator} from './calculatorClass';
 import type {Operation} from './operators';
 import type {ScientificConstant, ScientificFunction} from './scientificFunctions';
+
+import {Calculator} from './calculatorClass';
 
 type CalculatorMode = 'basic' | 'scientific';
 

@@ -1,11 +1,8 @@
-import {OPERATORS, type Operation} from './operators';
-import {
-  SCIENTIFIC_CONSTANTS,
-  SCIENTIFIC_FUNCTIONS,
-  type AngleUnit,
-  type ScientificConstant,
-  type ScientificFunction,
-} from './scientificFunctions';
+import type {Operation} from './operators';
+import type {AngleUnit, ScientificConstant, ScientificFunction} from './scientificFunctions';
+
+import {OPERATORS} from './operators';
+import {SCIENTIFIC_CONSTANTS, SCIENTIFIC_FUNCTIONS} from './scientificFunctions';
 
 /** An operand waiting on its right-hand side, e.g. "2 +" while "3 × 4" is entered. */
 interface PendingOperation {
