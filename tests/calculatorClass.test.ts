@@ -188,6 +188,137 @@ describe('Calculator Engine', () => {
     });
   });
 
+  describe('Order of Operations', () => {
+    /** Enters a space-separated expression, e.g. "2 + 3 * 4". */
+    const enter = (expression: string): void => {
+      expression.split(' ').forEach((token) => {
+        if (token === '+' || token === '-' || token === '*' || token === '/') {
+          calc.chooseOperation(token);
+        } else {
+          calc.appendNumber(token);
+        }
+      });
+    };
+
+    it.each([
+      ['2 + 3 * 4', '14'],
+      ['2 * 3 + 4', '10'],
+      ['10 - 2 * 3', '4'],
+      ['20 / 4 + 1', '6'],
+      ['1 + 2 * 3 + 4', '11'],
+      ['2 + 3 * 4 - 6 / 2', '11'],
+      ['2 * 3 * 4 + 1', '25'],
+    ])('should evaluate %s as %s', (expression, expected) => {
+      enter(expression);
+      calc.compute();
+      expect(calc.getDisplayValue()).toBe(expected);
+    });
+
+    it.each([
+      ['10 - 3 - 2', '5'],
+      ['16 / 4 / 2', '2'],
+      ['8 / 2 * 4', '16'],
+    ])('should evaluate equal precedence left to right: %s as %s', (expression, expected) => {
+      enter(expression);
+      calc.compute();
+      expect(calc.getDisplayValue()).toBe(expected);
+    });
+
+    it('should hold a lower-precedence operation until its right-hand side is resolved', () => {
+      enter('2 + 3 *');
+      expect(calc.getDisplayValue()).toBe('3');
+      expect(calc.getExpressionValue()).toBe('2 + 3 ×');
+
+      enter('4');
+      expect(calc.getExpressionValue()).toBe('2 + 3 × 4');
+    });
+
+    it('should collapse what it can when a lower-precedence operator is chosen', () => {
+      enter('2 + 3 * 4 +');
+      expect(calc.getDisplayValue()).toBe('14');
+      expect(calc.getExpressionValue()).toBe('14 +');
+    });
+
+    it('should resolve only the tighter operation when precedence allows nothing more', () => {
+      enter('2 + 3 * 4 *');
+      expect(calc.getDisplayValue()).toBe('12');
+      expect(calc.getExpressionValue()).toBe('2 + 12 ×');
+    });
+
+    it('should re-evaluate precedence when a pending operator is replaced', () => {
+      enter('2 + 3 * +');
+      expect(calc.getDisplayValue()).toBe('5');
+      expect(calc.getExpressionValue()).toBe('5 +');
+    });
+
+    it('should replace a lone pending operator', () => {
+      enter('6 + *');
+      expect(calc.getExpressionValue()).toBe('6 ×');
+
+      enter('2');
+      calc.compute();
+      expect(calc.getDisplayValue()).toBe('12');
+    });
+
+    it('should reuse the displayed value when = follows an operator', () => {
+      enter('2 + 3 *');
+      calc.compute();
+      expect(calc.getDisplayValue()).toBe('11');
+    });
+
+    it('should repeat only the last operation on further compute calls', () => {
+      enter('2 + 3 * 4');
+      calc.compute();
+      expect(calc.getDisplayValue()).toBe('14');
+
+      calc.compute();
+      expect(calc.getDisplayValue()).toBe('56');
+    });
+
+    it('should enter the Error state when a held operation divides by zero', () => {
+      enter('1 + 5 / 0');
+      calc.compute();
+      expect(calc.getDisplayValue()).toBe('Error');
+      expect(calc.getExpressionValue()).toBe('Error');
+    });
+
+    it('should enter the Error state when choosing an operator resolves a division by zero', () => {
+      enter('5 / 0 +');
+      expect(calc.getDisplayValue()).toBe('Error');
+    });
+
+    it('should recover from the Error state when a new number is typed', () => {
+      enter('5 / 0');
+      calc.compute();
+      calc.appendNumber('3');
+      expect(calc.getDisplayValue()).toBe('3');
+      expect(calc.getExpressionValue()).toBe('3');
+    });
+
+    it('should let delete clear the Error state', () => {
+      enter('5 / 0');
+      calc.compute();
+      calc.delete();
+      expect(calc.getDisplayValue()).toBe('0');
+    });
+
+    it('should take a percentage of the operand it applies to, within a longer expression', () => {
+      enter('100 + 50 + 10');
+      calc.percent();
+      expect(calc.getDisplayValue()).toBe('15');
+
+      calc.compute();
+      expect(calc.getDisplayValue()).toBe('165');
+    });
+
+    it('should treat percent as a plain fraction under a pending multiplication', () => {
+      enter('100 + 50 * 10');
+      calc.percent();
+      calc.compute();
+      expect(calc.getDisplayValue()).toBe('105');
+    });
+  });
+
   describe('Basic Operations', () => {
     it('should perform addition correctly', () => {
       calc.appendNumber('5');

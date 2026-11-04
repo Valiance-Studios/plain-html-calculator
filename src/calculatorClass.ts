@@ -1,14 +1,19 @@
-export type Operation = '+' | '-' | '*' | '/' | null;
+import {OPERATORS, type Operation} from './operators';
+
+/** An operand waiting on its right-hand side, e.g. "2 +" while "3 × 4" is entered. */
+interface PendingOperation {
+  operand: string
+  operation: Operation
+}
 
 export class Calculator {
   private currentOperand: string = '0';
-  private previousOperand: string = '';
-  private activeOperation: Operation = null;
+  private pending: PendingOperation[] = []; // Precedence increases towards the end
   private shouldResetScreen: boolean = false;
-  private isEvaluated: boolean = false; // Tracks if '=' was just pressed
-  private lastOperation: Operation = null;
-  private lastOperand: number | null = null;
-  private isPercentApplied: boolean = false; // The second operand came from '%', not typed digits
+  private isEvaluated: boolean = false; // Tracks if a result was just produced
+  private lastOperation: Operation | null = null;
+  private lastOperand: string | null = null;
+  private isPercentApplied: boolean = false; // The current operand came from '%', not typed digits
 
   constructor() {
     this.clear();
@@ -16,8 +21,7 @@ export class Calculator {
 
   public clear(): void {
     this.currentOperand = '0';
-    this.previousOperand = '';
-    this.activeOperation = null;
+    this.pending = [];
     this.lastOperation = null;
     this.lastOperand = null;
     this.shouldResetScreen = false;
@@ -58,85 +62,63 @@ export class Calculator {
   public chooseOperation(operation: Operation): void {
     if (this.currentOperand === 'Error') return;
 
-    // Chain operations if an operation is already queued up (e.g., 5 + 5 +)
-    if (this.activeOperation !== null && this.hasSecondOperand()) {
-      this.compute();
+    // Pressing a second operator in a row replaces the first (e.g., 2 + 3 × +)
+    if (this.pending.length > 0 && !this.hasSecondOperand()) {
+      this.pending.pop();
     }
 
-    this.previousOperand = this.currentOperand;
-    this.activeOperation = operation;
+    // Anything that binds at least as tightly can be resolved now: "2 + 3 × 4 +"
+    // collapses to "14 +", while "2 + 3 ×" has to wait for its right-hand side.
+    if (!this.reducePending(OPERATORS[operation].precedence)) return;
+
+    this.pending.push({operand: this.currentOperand, operation});
     this.lastOperation = null;
     this.lastOperand = null;
     this.shouldResetScreen = true;
     this.isEvaluated = false;
+    this.isPercentApplied = false;
   }
 
   public compute(): void {
     if (this.currentOperand === 'Error') return;
 
-    this.isPercentApplied = false;
+    const innermost = this.pending.at(-1);
 
-    let prev = parseFloat(this.previousOperand);
-    let current = parseFloat(this.currentOperand);
-
-    if (this.activeOperation !== null) {
-      this.lastOperation = this.activeOperation;
-      this.lastOperand = current;
+    if (innermost) {
+      this.lastOperation = innermost.operation;
+      this.lastOperand = this.currentOperand;
     } else if (this.lastOperation !== null && this.lastOperand !== null) {
-      prev = current;
-      current = this.lastOperand;
-      this.activeOperation = this.lastOperation;
+      // Pressing '=' again repeats the last operation (e.g., 9 + 3 = = gives 15)
+      this.pending.push({operand: this.currentOperand, operation: this.lastOperation});
+      this.currentOperand = this.lastOperand;
     } else {
       return;
     }
 
-    let result: number;
-    switch (this.activeOperation) {
-      case '+':
-        result = prev + current;
-        break;
-      case '-':
-        result = prev - current;
-        break;
-      case '*':
-        result = prev * current;
-        break;
-      case '/':
-        if (current === 0) {
-          this.currentOperand = 'Error';
-          this.previousOperand = '';
-          this.activeOperation = null;
-          return;
-        }
-        result = prev / current;
-        break;
-      default:
-        return;
-    }
+    if (!this.reducePending(0)) return;
 
-    this.currentOperand = this.formatResult(result);
-    this.previousOperand = '';
-    this.activeOperation = null;
     this.shouldResetScreen = true;
-    this.isEvaluated = true; // Mark evaluation complete
+    this.isEvaluated = true;
+    this.isPercentApplied = false;
   }
 
   /**
    * Converts the current number from a percentage. After + or - it is taken as a
-   * percentage of the first operand (200 + 10% adds 20); otherwise it is simply
+   * percentage of the operand before it (200 + 10% adds 20); otherwise it is simply
    * divided by 100 (50% is 0.5, and 200 x 10% multiplies by 0.1).
    */
   public percent(): void {
     if (this.currentOperand === 'Error') return;
 
     const fraction = parseFloat(this.currentOperand) / 100;
+    const innermost = this.pending.at(-1);
 
-    if (this.activeOperation === null) {
+    if (!innermost) {
       this.currentOperand = this.formatResult(fraction);
       this.isEvaluated = true;
     } else {
-      const isRelative = this.activeOperation === '+' || this.activeOperation === '-';
-      const result = isRelative ? parseFloat(this.previousOperand) * fraction : fraction;
+      const isRelative = innermost.operation === '+' || innermost.operation === '-';
+      const result = isRelative ? parseFloat(innermost.operand) * fraction : fraction;
       this.currentOperand = this.formatResult(result);
       this.isPercentApplied = true;
     }
@@ -165,30 +147,59 @@ export class Calculator {
    * Returns the full formula currently being built.
    */
   public getExpressionValue(): string {
-    // State 1: An operation is active (e.g., "1234 +" or "1234 + 4567")
-    if (this.activeOperation !== null) {
-      const symbol = this.getSymbol(this.activeOperation);
+    // State 1: Operations are pending (e.g., "2 + 3 ×" or "2 + 3 × 4")
+    if (this.pending.length > 0) {
+      const expression = this.pending
+        .map(({operand, operation}) => `${operand} ${OPERATORS[operation].symbol}`)
+        .join(' ');
 
-      // If the user started entering the second number, append it to the expression
-      if (this.hasSecondOperand()) {
-        return `${this.previousOperand} ${symbol} ${this.currentOperand}`;
-      }
-
-      // Otherwise, the user just pressed the operator (e.g., "1234 +")
-      return `${this.previousOperand} ${symbol}`;
+      return this.hasSecondOperand() ? `${expression} ${this.currentOperand}` : expression;
     }
 
-    // State 2: Just calculated a result with '=' (e.g., show nothing or last result context)
+    // State 2: Just calculated a result (e.g., show nothing or last result context)
     if (this.isEvaluated) {
-      return ''; // Or optionally: `${this.lastOperandA} ${symbol} ${this.lastOperandB} =`
+      return '';
     }
 
     // State 3: Entry of the very first number (e.g., "1234")
     return this.currentOperand;
   }
 
+  /**
+   * Whether the current operand is the right-hand side of the innermost pending
+   * operation, rather than a value the user hasn't yet replaced.
+   */
   private hasSecondOperand(): boolean {
     return !this.shouldResetScreen || this.isPercentApplied;
+  }
+
+  /**
+   * Resolves pending operations, innermost first, into the current operand for as
+   * long as they bind at least as tightly as minPrecedence. Returns false if one
+   * had no valid result, leaving the calculator in its Error state.
+   */
+  private reducePending(minPrecedence: number): boolean {
+    let innermost = this.pending.at(-1);
+
+    while (innermost && OPERATORS[innermost.operation].precedence >= minPrecedence) {
+      const result = OPERATORS[innermost.operation].apply(
+        parseFloat(innermost.operand),
+        parseFloat(this.currentOperand),
+      );
+
+      // Dividing by zero, for example, gives Infinity or NaN rather than throwing
+      if (!Number.isFinite(result)) {
+        this.clear();
+        this.currentOperand = 'Error';
+        return false;
+      }
+
+      this.currentOperand = this.formatResult(result);
+      this.pending.pop();
+      innermost = this.pending.at(-1);
+    }
+
+    return true;
   }
 
   /**
@@ -196,19 +207,5 @@ export class Calculator {
    */
   private formatResult(value: number): string {
     return String(Math.round((value + Number.EPSILON) * 1e12) / 1e12);
-  }
-
-  private getSymbol(op: Operation): string {
-    switch (op) {
-      case '*': {
-        return '×';
-      }
-      case '/': {
-        return '÷';
-      }
-      default: {
-        return op || '';
-      }
-    }
   }
 }

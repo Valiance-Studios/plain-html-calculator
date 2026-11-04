@@ -1,4 +1,5 @@
-import {Calculator, type Operation} from './calculatorClass';
+import {Calculator} from './calculatorClass';
+import type {Operation} from './operators';
 
 export class CalculatorUI {
   private calculator: Calculator;
