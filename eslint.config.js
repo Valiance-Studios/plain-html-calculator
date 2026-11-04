@@ -2,6 +2,7 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 import {defineConfig} from 'eslint/config';
 import stylistic from '@stylistic/eslint-plugin';
+import {importX} from 'eslint-plugin-import-x';
 
 export default defineConfig([
   {
@@ -32,4 +33,22 @@ export default defineConfig([
     },
   },
   tseslint.configs.recommended,
+  {
+    // Type imports get their own statements, above the other imports and one blank line away.
+    files: ['**/*.ts'],
+    plugins: {
+      'import-x': importX,
+    },
+    rules: {
+      '@typescript-eslint/consistent-type-imports': ['error', {
+        prefer: 'type-imports',
+        fixStyle: 'separate-type-imports',
+      }],
+      'import-x/consistent-type-specifier-style': ['error', 'prefer-top-level'],
+      'import-x/order': ['error', {
+        'groups': ['type', ['builtin', 'external', 'internal', 'parent', 'sibling', 'index', 'object', 'unknown']],
+        'newlines-between': 'always',
+      }],
+    },
+  },
 ]);

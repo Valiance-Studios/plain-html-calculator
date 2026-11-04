@@ -16,7 +16,7 @@ Run the tests, lint, and type check before calling work finished.
 
 ### TypeScript imports
 
-Import types with their own `import type` statements, above the other imports and separated from them by one blank line. Don't use inline `type` modifiers. Lint doesn't enforce this, so check it by hand.
+Import types with their own `import type` statements, above the other imports and separated from them by one blank line. Don't use inline `type` modifiers. Lint enforces this, and `npm run lint:fix` corrects it.
 
 ```ts
 import type {Operation} from './operators';
