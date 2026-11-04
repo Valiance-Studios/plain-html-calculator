@@ -38,3 +38,7 @@ The scientific view adds:
 | `D` | Degrees or radians | `P` `E` | π, e |
 
 Functions apply to the number on the display, so `9` then `√` gives `3`.
+
+## License
+
+[MIT](LICENSE)

@@ -24,6 +24,7 @@ flowchart LR
 | `src/scientificFunctions.ts` | Tables of one-operand functions and constants, plus angle conversion. |
 | `src/styles/main.css` | Theme variables and every layout. |
 | `lib/error.ts` | `wrapError` helper, reachable through the `@lib/*` path alias. Nothing uses it yet. |
+| `public/` | Files copied to the site as they are. `favicon.svg` is the icon's source, and `favicon-32.png` and `apple-touch-icon.png` are renders of it for browsers that need PNG. iOS adds its own rounded corners, so the touch icon has square corners. |
 | `tests/` | Vitest unit tests for the engine, and integration tests for the UI against a small DOM fixture (jsdom). |
 
 ## Input flow
