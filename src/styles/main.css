@@ -17,6 +17,7 @@
   --edge: 15px;
   --key-gap: 10px;
   --key-font-size: 1.5em;
+  --key-min-height: 44px; /* Below this, the page scrolls rather than squashing the keys */
   --display-primary-size: 2.5rem;
   --display-secondary-size: 0.95rem;
   --scientific-key-font-size: clamp(0.8rem, 2.4vw, 1.15rem);
@@ -175,7 +176,7 @@ body[data-mode="scientific"] {
     display: grid;
     flex: 5;
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    grid-template-rows: repeat(4, minmax(0, 1fr));
+    grid-template-rows: repeat(4, minmax(var(--key-min-height), 1fr));
     grid-template-areas:
     "sci-open sci-close sci-mod sci-angle sci-angle"
     "sci-sin sci-cos sci-tan sci-pi sci-e"
@@ -200,8 +201,8 @@ body[data-mode="scientific"] {
 @media (max-width: 540px), (max-height: 580px) {
   body {
     margin: 0;
-    height: 100vh;
-    height: 100dvh;
+    min-height: 100vh;
+    min-height: 100dvh;
     overscroll-behavior: none;
   }
 
@@ -221,18 +222,22 @@ body[data-mode="scientific"] {
   }
 
   .calculator-top {
+    /* If the keys need more height than the screen has, the result stays in view as they scroll */
+    position: sticky;
+    top: 0;
+    z-index: 1;
     display: flex;
     padding-block: max(var(--edge), env(safe-area-inset-top)) var(--edge);
   }
 
   .calculator-display {
     flex: 1;
+    min-height: 0;
   }
 
   .calculator-bottom {
     display: flex;
     flex: 1;
-    min-height: 0;
     padding-block: var(--edge) max(var(--edge), env(safe-area-inset-bottom));
   }
 
@@ -240,7 +245,7 @@ body[data-mode="scientific"] {
     flex: 1;
     height: auto;
     grid-template-columns: repeat(6, minmax(0, 1fr));
-    grid-template-rows: repeat(4, minmax(0, 1fr));
+    grid-template-rows: repeat(4, minmax(var(--key-min-height), 1fr));
   }
 
   .btn {
@@ -262,13 +267,18 @@ body[data-mode="scientific"] {
     --display-secondary-size: 1.125rem;
   }
 
+  /* Each area starts at the height it needs, then they share whatever is left over */
   .calculator-top {
-    flex: 0 0 28%;
+    flex: 28 0 auto;
+  }
+
+  .calculator-bottom {
+    flex: 72 0 auto;
   }
 
   .calculator-keys-wrapper {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    grid-template-rows: repeat(6, minmax(0, 1fr));
+    grid-template-rows: repeat(6, minmax(var(--key-min-height), 1fr));
     grid-template-areas:
     "all-clear single-delete invert-sign operator-percent"
     "num-7 num-8 num-9 operator-divide"
@@ -311,9 +321,9 @@ body[data-mode="scientific"] {
 
     & .calculator-keys-scientific {
       flex: none;
-      height: min(180px, 22dvh);
+      min-height: min(180px, 22dvh);
       grid-template-columns: repeat(6, minmax(0, 1fr));
-      grid-template-rows: repeat(3, minmax(0, 1fr));
+      grid-template-rows: repeat(3, minmax(var(--key-min-height), 1fr));
       grid-template-areas:
       "sci-open sci-close sci-mod sci-angle sci-pi sci-e"
       "sci-sin sci-cos sci-tan sci-ln sci-log sci-sqrt"
@@ -322,7 +332,7 @@ body[data-mode="scientific"] {
 
     & .calculator-keys-wrapper {
       flex: none;
-      height: min(320px, 40dvh);
+      min-height: min(320px, 40dvh);
     }
   }
 }
@@ -331,6 +341,7 @@ body[data-mode="scientific"] {
 @media (max-width: 540px) {
   body[data-mode="scientific"] {
     --key-gap: 6px;
+    --key-min-height: 40px; /* Nine rows of keys still fit a 320x568 phone without scrolling */
     --key-font-size: 1.25rem;
     --scientific-key-font-size: 1rem;
     --display-primary-size: min(2.75rem, 7dvh);
@@ -340,23 +351,21 @@ body[data-mode="scientific"] {
     }
 
     & .calculator-top {
-      flex-basis: 20%;
+      flex-grow: 20;
     }
 
-    & .calculator-display {
-      min-height: 0;
+    & .calculator-bottom {
+      flex-grow: 80;
     }
 
     & .calculator-keys-scientific {
       flex: 3 1 0;
-      height: auto;
-      min-height: 0;
+      min-height: auto;
     }
 
     & .calculator-keys-wrapper {
       flex: 6 1 0;
-      height: auto;
-      min-height: 0;
+      min-height: auto;
     }
   }
 }
