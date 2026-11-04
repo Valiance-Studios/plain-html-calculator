@@ -55,7 +55,7 @@ Add the method to `Calculator`, an entry to `CalculatorUI.actions`, and a key or
 - `CalculatorUI` never removes its `window` listeners, so that test file's `afterEach` removes them. Keep that cleanup, or instances from earlier tests will handle later key presses.
 - jsdom doesn't evaluate media queries or calculate layout, so the tests can't catch layout bugs. After changing `index.html` or the CSS, run the app in a real browser and press real keys.
     - Playwright isn't a project dependency. Install `playwright-core` in a temporary directory outside the repo and launch it with `channel: 'chrome'`.
-    - Check both views at 320×568, 393×852, 400×400, 320×300, 852×393, 568×320, 600×581, 768×1024, and 1280×800, plus both sides of each breakpoint: 540/541px wide and 580/581px tall.
+    - Check both views at 320×568, 393×852, 400×400, 320×300, 852×393, 568×320, 600×581, 768×1024, 820×1180, 1180×820, and 1280×800, plus both sides of each breakpoint: 540/541px wide and 580/581px tall.
     - Check that the display and keys don't overlap, that keys keep their minimum height, and that there's no sideways scrolling. Look at screenshots too.
     - Device emulation doesn't cover notches, Safari's toolbars, or iOS pressed-key styling. Say so when reporting, unless they've been checked on a real phone.
 

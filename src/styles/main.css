@@ -12,33 +12,45 @@
   --color-key-operator: #ff9500;
   --color-key-operator-hover: #e68a00;
   --color-key-operator-active: #cc7a00;
-
-  /* Layout: overridden per presentation in the media queries below */
-  --edge: 15px;
-  --key-gap: 10px;
-  --key-font-size: 1.5em;
-  --key-min-height: 44px; /* Below this, the page scrolls rather than squashing the keys */
-  --display-primary-size: 2.5rem;
-  --display-secondary-size: 0.95rem;
-  --scientific-key-font-size: clamp(0.8rem, 2.4vw, 1.15rem);
 }
 
 body {
+  /* The card's size at --unit: 1px, as unitless numbers so the sizes below can scale from them */
+  --card-width: 500;
+  --card-height: 560;
+
+  /* One design pixel: the card grows to 90% of the viewport, between its original size and double */
+  --unit: clamp(1px, min(90vw / var(--card-width), 90dvh / var(--card-height)), 2px);
+
+  /* Layout: overridden per presentation in the media queries below */
+  --edge: calc(15 * var(--unit));
+  --key-gap: calc(10 * var(--unit));
+  --key-font-size: calc(24 * var(--unit));
+  --key-min-height: 44px; /* Below this, the page scrolls rather than squashing the keys */
+  --display-primary-size: calc(40 * var(--unit));
+  --display-secondary-size: calc(15.2 * var(--unit));
+  --scientific-key-font-size: calc(18.4 * var(--unit));
+
   background-color: var(--color-page);
   display: flex;
-  justify-content: center;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 8px;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .calculator-wrapper {
   background-color: var(--color-shell);
   border-radius: 5px;
-  width: 500px;
+  margin: auto; /* Centers both ways, and unlike align-items, leaves a taller card scrollable from its top */
+  width: calc(var(--card-width) * var(--unit));
 }
 
 .calculator-top {
   background-color: var(--color-display-bezel);
   padding: var(--edge);
-  height: 100px;
+  height: calc(100 * var(--unit));
   border: none;
   border-radius: 5px;
 }
@@ -52,8 +64,8 @@ body {
   align-items: flex-end;
   background-color: var(--color-display);
   border-radius: 8px;
-  padding: 12px 16px 12px 76px; /* The left side keeps text clear of the mode toggle */
-  min-height: 100px;
+  padding: calc(12 * var(--unit)) calc(16 * var(--unit)) calc(12 * var(--unit)) calc(76 * var(--unit)); /* The left side keeps text clear of the mode toggle */
+  min-height: calc(100 * var(--unit));
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -66,8 +78,8 @@ body {
 .display-secondary {
   color: var(--color-text-muted);
   font-size: min(var(--display-secondary-size), 100cqi / (var(--display-length, 1) * 0.6));
-  min-height: 1.25rem; /* Reserves space so layout doesn't collapse when empty */
-  margin-bottom: 4px;
+  min-height: calc(20 * var(--unit)); /* Reserves space so layout doesn't collapse when empty */
+  margin-bottom: calc(4 * var(--unit));
   white-space: nowrap;
 }
 
@@ -82,7 +94,7 @@ body {
 .calculator-bottom {
   background-color: var(--color-shell);
   border-radius: 5px;
-  height: 400px;
+  height: calc(400 * var(--unit));
   padding: var(--edge);
 }
 
@@ -141,12 +153,12 @@ body {
 
 .btn.mode-toggle {
   position: absolute;
-  top: 8px;
-  left: 8px;
-  width: 60px;
-  height: 36px;
+  top: calc(8 * var(--unit));
+  left: calc(8 * var(--unit));
+  width: calc(60 * var(--unit));
+  height: calc(36 * var(--unit));
   padding: 0;
-  font-size: 0.8rem;
+  font-size: calc(12.8 * var(--unit));
 }
 
 .calculator-keys-scientific {
@@ -163,9 +175,7 @@ body {
 
 /* Scientific: the extra keys sit to the left, on the same rows as the basic keys */
 body[data-mode="scientific"] {
-  & .calculator-wrapper {
-    width: 900px;
-  }
+  --card-width: 900;
 
   & .calculator-bottom {
     display: flex;
@@ -200,15 +210,17 @@ body[data-mode="scientific"] {
 /* Compact: the calculator fills the viewport whenever the 500x560 card wouldn't fit */
 @media (max-width: 540px), (max-height: 580px) {
   body {
-    margin: 0;
-    min-height: 100vh;
-    min-height: 100dvh;
+    --unit: 1px;
+    --scientific-key-font-size: clamp(0.8rem, 2.4vw, 1.15rem);
+
+    padding: 0;
     overscroll-behavior: none;
   }
 
   .calculator-wrapper {
     display: flex;
     flex-direction: column;
+    margin: 0;
     width: 100%;
     border-radius: 0;
   }
@@ -260,7 +272,7 @@ body[data-mode="scientific"] {
 
 /* Portrait: four thumb-sized columns, with a taller display above them */
 @media (max-width: 540px) {
-  :root {
+  body {
     --edge: 10px;
     --key-font-size: 1.75rem;
     --display-primary-size: min(3.5rem, 9dvh);
@@ -291,7 +303,7 @@ body[data-mode="scientific"] {
 
 /* Landscape: keeps the six-column grid and gives height back to the keys */
 @media (min-width: 541px) and (max-height: 580px) {
-  :root {
+  body {
     --edge: 8px;
     --key-gap: 6px;
     --display-primary-size: 2rem;
@@ -310,9 +322,9 @@ body[data-mode="scientific"] {
 /* Scientific without the width for two key blocks: stacks them, three compact rows on top */
 @media (max-width: 899px) and (min-height: 581px), (max-width: 540px) {
   body[data-mode="scientific"] {
-    & .calculator-wrapper {
-      width: min(500px, 100%);
-    }
+    --card-width: 500;
+    --card-height: 670;
+    --scientific-key-font-size: calc(14.4 * var(--unit));
 
     & .calculator-bottom {
       flex-direction: column;
@@ -321,7 +333,7 @@ body[data-mode="scientific"] {
 
     & .calculator-keys-scientific {
       flex: none;
-      min-height: min(180px, 22dvh);
+      min-height: min(calc(180 * var(--unit)), 22dvh);
       grid-template-columns: repeat(6, minmax(0, 1fr));
       grid-template-rows: repeat(3, minmax(var(--key-min-height), 1fr));
       grid-template-areas:
@@ -332,7 +344,7 @@ body[data-mode="scientific"] {
 
     & .calculator-keys-wrapper {
       flex: none;
-      min-height: min(320px, 40dvh);
+      min-height: min(calc(320 * var(--unit)), 40dvh);
     }
   }
 }

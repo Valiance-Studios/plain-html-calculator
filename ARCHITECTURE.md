@@ -83,10 +83,14 @@ Which layout appears depends on two independent inputs. Viewport size comes from
 
 | Viewport | Basic view | Scientific view |
 |---|---|---|
-| 900px or wider and over 580px tall | 500px card, 6 × 4 keys | 900px card, 5 × 4 scientific keys beside 6 × 4 basic keys |
-| 541–899px wide and over 580px tall | 500px card, 6 × 4 keys | 500px card, 6 × 3 scientific keys above 6 × 4 basic keys |
+| 900px or wider and over 580px tall | 500 × 560 card, scaled, 6 × 4 keys | 900 × 560 card, scaled, 5 × 4 scientific keys beside 6 × 4 basic keys |
+| 541–899px wide and over 580px tall | 500 × 560 card, scaled, 6 × 4 keys | 500 × 670 card, scaled, 6 × 3 scientific keys above 6 × 4 basic keys |
 | 541px or wider and 580px tall or less | Full screen, 6 × 4 keys | Full screen, 5 × 4 scientific keys beside 6 × 4 basic keys |
 | 540px wide or less | Full screen, 4 × 6 keys | Full screen, 6 × 3 scientific keys above 4 × 6 basic keys |
+
+The card layouts are centred both ways with auto margins, which fall to zero if a card is taller than the screen, so its top stays reachable by scrolling.
+
+Cards scale with the viewport through `--unit`, the size of one design pixel. `--card-width` and `--card-height` give the card's proportions, and `--unit` grows it to 90% of the viewport in whichever direction runs out first, between 1px and 2px. Card sizes are multiples of `--unit`, so keys, text, and spacing keep their proportions. The compact layouts fix it at 1px.
 
 The compact full-screen layouts share these behaviours:
 
@@ -101,7 +105,7 @@ The compact full-screen layouts share these behaviours:
 
 ### Theme
 
-All colours and layout sizes are custom properties on `:root`, and layouts override them in media queries. `--color-key-standard-active` is lighter on touch screens, where there's no hover state to contrast a press with.
+Colours are custom properties on `:root`, and layout sizes are custom properties on `body`, where the view's `data-mode` can change them. Layouts override them in media queries. `--color-key-standard-active` is lighter on touch screens, where there's no hover state to contrast a press with.
 
 ## Behaviour decisions
 
