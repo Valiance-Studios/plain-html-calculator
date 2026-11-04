@@ -1,4 +1,6 @@
 import {Calculator} from '../src/calculatorClass';
+import type {Operation} from '../src/operators';
+import type {ScientificFunction} from '../src/scientificFunctions';
 
 describe('Calculator Engine', () => {
   let calc: Calculator;
@@ -316,6 +318,298 @@ describe('Calculator Engine', () => {
       calc.percent();
       calc.compute();
       expect(calc.getDisplayValue()).toBe('105');
+    });
+  });
+
+  describe('Scientific', () => {
+    /** Enters a space-separated expression, e.g. "2 * ( 3 + 4 )". */
+    const enter = (expression: string): void => {
+      expression.split(' ').forEach((token) => {
+        if (token === '(') {
+          calc.openParenthesis();
+        } else if (token === ')') {
+          calc.closeParenthesis();
+        } else if (['+', '-', '*', '/', 'mod', '^'].includes(token)) {
+          calc.chooseOperation(token as Operation);
+        } else {
+          calc.appendNumber(token);
+        }
+      });
+    };
+
+    const evaluate = (expression: string): string => {
+      enter(expression);
+      calc.compute();
+      return calc.getDisplayValue();
+    };
+
+    describe('Parentheses', () => {
+      it.each([
+        ['( 2 + 3 ) * 4', '20'],
+        ['2 * ( 3 + 4 )', '14'],
+        ['2 * ( 3 + 4 ) * 5', '70'],
+        ['( ( 1 + 2 ) * ( 3 + 4 ) ) * 2', '42'],
+        ['10 - ( 2 + 3 )', '5'],
+        ['( 2 + 3 * 4 ) * 2', '28'],
+      ])('should evaluate %s as %s', (expression, expected) => {
+        expect(evaluate(expression)).toBe(expected);
+      });
+
+      it('should show an open group in the expression', () => {
+        enter('2 * ( 3 + 4');
+        expect(calc.getExpressionValue()).toBe('2 × (3 + 4');
+      });
+
+      it('should show the group\'s value once closed', () => {
+        enter('2 * ( 3 + 4 )');
+        expect(calc.getDisplayValue()).toBe('7');
+        expect(calc.getExpressionValue()).toBe('2 × 7');
+      });
+
+      it('should close open groups on compute', () => {
+        expect(evaluate('2 * ( 3 + ( 4 + 1')).toBe('16');
+      });
+
+      it('should resolve a bare open group on compute', () => {
+        enter('2 * ( 5');
+        calc.compute();
+        expect(calc.getDisplayValue()).toBe('10');
+        expect(calc.getExpressionValue()).toBe('');
+      });
+
+      it('should ignore a closing parenthesis with no open group', () => {
+        enter('5 )');
+        expect(calc.getDisplayValue()).toBe('5');
+
+        calc.appendNumber('1');
+        expect(calc.getDisplayValue()).toBe('51');
+      });
+
+      it('should multiply when a group follows a typed value', () => {
+        expect(evaluate('2 ( 3 + 4 )')).toBe('14');
+      });
+
+      it('should multiply when a group follows another group', () => {
+        expect(evaluate('( 1 + 1 ) ( 2 + 3 )')).toBe('10');
+      });
+
+      it('should start fresh when a group follows a result', () => {
+        evaluate('2 + 3');
+        expect(evaluate('( 1 + 1 ) * 3')).toBe('6');
+      });
+
+      it('should not replace the operator before an open parenthesis', () => {
+        enter('2 * ( +');
+        expect(calc.getExpressionValue()).toBe('2 × (0 +');
+      });
+
+      it('should use the displayed value when a group closes after an operator', () => {
+        enter('( 2 + )');
+        expect(calc.getDisplayValue()).toBe('4');
+      });
+
+      it('should enter the Error state when a group divides by zero', () => {
+        enter('( 1 / 0 )');
+        expect(calc.getDisplayValue()).toBe('Error');
+      });
+
+      it('should start a new expression when a group opens after an error', () => {
+        evaluate('1 / 0');
+        expect(evaluate('( 1 + 1 )')).toBe('2');
+      });
+    });
+
+    describe('Power and Modulo', () => {
+      it.each([
+        ['2 ^ 10', '1024'],
+        ['2 ^ 3 ^ 2', '512'],
+        ['2 * 3 ^ 2', '18'],
+        ['1 + 2 ^ 3 * 2', '17'],
+        ['( 2 + 1 ) ^ 2', '9'],
+        ['2 ^ ( 1 + 2 )', '8'],
+        ['7 mod 3', '1'],
+        ['1 + 7 mod 3', '2'],
+        ['2 * 7 mod 3', '2'],
+      ])('should evaluate %s as %s', (expression, expected) => {
+        expect(evaluate(expression)).toBe(expected);
+      });
+
+      it('should keep the sign of the first operand for modulo', () => {
+        enter('7');
+        calc.invertSign();
+        enter('mod 3');
+        calc.compute();
+        expect(calc.getDisplayValue()).toBe('-1');
+      });
+
+      it('should enter the Error state for modulo by zero', () => {
+        expect(evaluate('7 mod 0')).toBe('Error');
+      });
+
+      it('should enter the Error state for a result too large to represent', () => {
+        expect(evaluate('10 ^ 400')).toBe('Error');
+      });
+
+      it('should keep very large results', () => {
+        expect(evaluate('10 ^ 300')).toBe('1e+300');
+      });
+
+      it('should keep very small results', () => {
+        enter('10 ^ 13');
+        calc.invertSign();
+        calc.compute();
+        expect(calc.getDisplayValue()).toBe('1e-13');
+      });
+
+      it('should label modulo in the expression', () => {
+        enter('7 mod');
+        expect(calc.getExpressionValue()).toBe('7 mod');
+      });
+    });
+
+    describe('Functions', () => {
+      const applyTo = (input: string, scientificFunction: ScientificFunction): string => {
+        calc.clear();
+        calc.appendNumber(input);
+        calc.applyFunction(scientificFunction);
+        return calc.getDisplayValue();
+      };
+
+      it.each<[string, ScientificFunction, string]>([
+        ['30', 'sin', '0.5'],
+        ['90', 'sin', '1'],
+        ['180', 'sin', '0'],
+        ['60', 'cos', '0.5'],
+        ['90', 'cos', '0'],
+        ['45', 'tan', '1'],
+        ['180', 'tan', '0'],
+        ['1', 'asin', '90'],
+        ['1', 'acos', '0'],
+        ['1', 'atan', '45'],
+      ])('should evaluate in degrees by default: %s %s is %s', (input, scientificFunction, expected) => {
+        expect(applyTo(input, scientificFunction)).toBe(expected);
+      });
+
+      it.each<[string, ScientificFunction, string]>([
+        ['1000', 'log', '3'],
+        ['1', 'ln', '0'],
+        ['9', 'sqrt', '3'],
+        ['27', 'cbrt', '3'],
+        ['12', 'square', '144'],
+      ])('should evaluate %s %s as %s', (input, scientificFunction, expected) => {
+        expect(applyTo(input, scientificFunction)).toBe(expected);
+      });
+
+      it.each<[string, ScientificFunction]>([
+        ['90', 'tan'],
+        ['2', 'asin'],
+        ['2', 'acos'],
+        ['0', 'ln'],
+        ['0', 'log'],
+      ])('should enter the Error state where undefined: %s %s', (input, scientificFunction) => {
+        expect(applyTo(input, scientificFunction)).toBe('Error');
+      });
+
+      it('should enter the Error state for the square root of a negative number', () => {
+        calc.appendNumber('4');
+        calc.invertSign();
+        calc.applyFunction('sqrt');
+        expect(calc.getDisplayValue()).toBe('Error');
+      });
+
+      it('should find the cube root of a negative number', () => {
+        calc.appendNumber('8');
+        calc.invertSign();
+        calc.applyFunction('cbrt');
+        expect(calc.getDisplayValue()).toBe('-2');
+      });
+
+      it('should use radians once toggled', () => {
+        expect(calc.getAngleUnit()).toBe('deg');
+
+        calc.toggleAngleUnit();
+        expect(calc.getAngleUnit()).toBe('rad');
+
+        calc.enterConstant('pi');
+        calc.applyFunction('sin');
+        expect(calc.getDisplayValue()).toBe('0');
+
+        calc.clear();
+        calc.appendNumber('1');
+        calc.applyFunction('atan');
+        expect(calc.getDisplayValue()).toBe('0.785398163397');
+      });
+
+      it('should keep the angle unit through clear', () => {
+        calc.toggleAngleUnit();
+        calc.clear();
+        expect(calc.getAngleUnit()).toBe('rad');
+      });
+
+      it('should use a result as an operand within a longer expression', () => {
+        enter('2 + 9');
+        calc.applyFunction('sqrt');
+        expect(calc.getExpressionValue()).toBe('2 + 3');
+
+        enter('* 2');
+        calc.compute();
+        expect(calc.getDisplayValue()).toBe('8');
+      });
+
+      it('should apply to the displayed value right after an operator', () => {
+        enter('9 +');
+        calc.applyFunction('sqrt');
+        calc.compute();
+        expect(calc.getDisplayValue()).toBe('12');
+      });
+
+      it('should replace a function result when a new number is typed', () => {
+        calc.appendNumber('9');
+        calc.applyFunction('sqrt');
+        calc.appendNumber('7');
+        expect(calc.getDisplayValue()).toBe('7');
+      });
+
+      it('should multiply when a group follows a function result', () => {
+        calc.appendNumber('9');
+        calc.applyFunction('sqrt');
+        expect(evaluate('( 1 + 1 )')).toBe('6');
+      });
+
+      it('should leave the Error state alone', () => {
+        evaluate('1 / 0');
+        calc.applyFunction('sqrt');
+        expect(calc.getDisplayValue()).toBe('Error');
+      });
+    });
+
+    describe('Constants', () => {
+      it('should enter constants at full precision', () => {
+        calc.enterConstant('pi');
+        expect(calc.getDisplayValue()).toBe(String(Math.PI));
+
+        calc.enterConstant('e');
+        expect(calc.getDisplayValue()).toBe(String(Math.E));
+      });
+
+      it('should use a constant as an operand', () => {
+        enter('2 *');
+        calc.enterConstant('pi');
+        calc.compute();
+        expect(calc.getDisplayValue()).toBe('6.28318530718');
+      });
+
+      it('should invert ln with e', () => {
+        calc.enterConstant('e');
+        calc.applyFunction('ln');
+        expect(calc.getDisplayValue()).toBe('1');
+      });
+
+      it('should recover from the Error state', () => {
+        evaluate('1 / 0');
+        calc.enterConstant('e');
+        expect(calc.getDisplayValue()).toBe(String(Math.E));
+      });
     });
   });
 
