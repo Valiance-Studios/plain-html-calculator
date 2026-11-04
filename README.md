@@ -11,6 +11,12 @@ npm run dev
 
 Run the tests with `npm test` and check style with `npm run lint`.
 
+## Live site
+
+The calculator is hosted at <https://vs-valiance-studios-dev-calculator.web.app>.
+
+To deploy, install the [Firebase CLI](https://firebase.google.com/docs/cli), run `firebase login` with an account that has access to the Firebase project, and then run `npm run deploy`. It checks lint and tests, builds, and publishes `dist/`.
+
 ## Documentation
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) explains how the code fits together, so you can understand the engine, layouts, and deliberate behaviour choices without reading all of the source.
@@ -32,3 +38,7 @@ The scientific view adds:
 | `D` | Degrees or radians | `P` `E` | π, e |
 
 Functions apply to the number on the display, so `9` then `√` gives `3`.
+
+## License
+
+[MIT](LICENSE)

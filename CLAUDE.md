@@ -9,6 +9,7 @@ Guidance for working in this repository. Read [ARCHITECTURE.md](ARCHITECTURE.md)
 - `npm run lint`: check style. `npm run lint:fix` corrects most problems.
 - `npx tsc`: type check. It emits nothing.
 - `npm run build`: type check and build to `dist/`.
+- `npm run deploy`: run lint and tests, build, and publish to Firebase Hosting. It uses a globally installed Firebase CLI, and it changes the public site, so run it only when asked.
 
 Run the tests, lint, and type check before calling work finished.
 

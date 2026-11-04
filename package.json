@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "vitest"
+    "test": "vitest",
+    "deploy": "npm run lint && vitest run && npm run build && firebase deploy --only hosting"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -22,5 +23,6 @@
     "typescript-eslint": "^8.56.1",
     "vite": "^8.3.0",
     "vitest": "^5.0.5"
-  }
+  },
+  "license": "MIT"
 }

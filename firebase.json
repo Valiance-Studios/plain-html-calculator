@@ -1,0 +1,6 @@
+{
+  "hosting": {
+    "site": "vs-valiance-studios-dev-calculator",
+    "public": "dist"
+  }
+}
