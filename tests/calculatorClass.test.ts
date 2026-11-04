@@ -1,6 +1,7 @@
-import {Calculator} from '../src/calculatorClass';
 import type {Operation} from '../src/operators';
 import type {ScientificFunction} from '../src/scientificFunctions';
+
+import {Calculator} from '../src/calculatorClass';
 
 describe('Calculator Engine', () => {
   let calc: Calculator;
