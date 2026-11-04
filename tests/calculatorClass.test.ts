@@ -50,6 +50,142 @@ describe('Calculator Engine', () => {
       calc.delete();
       expect(calc.getDisplayValue()).toBe('0');
     });
+
+    it('should reset display to "0" when the last digit of a negative number is deleted', () => {
+      calc.appendNumber('5');
+      calc.invertSign();
+      calc.delete();
+      expect(calc.getDisplayValue()).toBe('0');
+    });
+
+    it('should not leave leading zeros when "00" is entered first', () => {
+      calc.appendNumber('00');
+      expect(calc.getDisplayValue()).toBe('0');
+
+      calc.appendNumber('5');
+      expect(calc.getDisplayValue()).toBe('5');
+    });
+
+    it('should not leave leading zeros when "00" starts the second operand', () => {
+      calc.appendNumber('7');
+      calc.chooseOperation('+');
+      calc.appendNumber('00');
+      expect(calc.getDisplayValue()).toBe('0');
+    });
+
+    it('should append "00" as two digits after other input', () => {
+      calc.appendNumber('5');
+      calc.appendNumber('00');
+      expect(calc.getDisplayValue()).toBe('500');
+
+      calc.clear();
+      calc.appendNumber('.');
+      calc.appendNumber('00');
+      expect(calc.getDisplayValue()).toBe('0.00');
+    });
+
+    it('should start a new "0." when "." follows a result', () => {
+      calc.appendNumber('5');
+      calc.chooseOperation('+');
+      calc.appendNumber('3');
+      calc.compute();
+      calc.appendNumber('.');
+      expect(calc.getDisplayValue()).toBe('0.');
+    });
+  });
+
+  describe('Percent', () => {
+    it('should divide a lone number by 100', () => {
+      calc.appendNumber('50');
+      calc.percent();
+      expect(calc.getDisplayValue()).toBe('0.5');
+      expect(calc.getExpressionValue()).toBe('');
+    });
+
+    it('should replace a percent result when a new number is typed', () => {
+      calc.appendNumber('50');
+      calc.percent();
+      calc.appendNumber('7');
+      expect(calc.getDisplayValue()).toBe('7');
+    });
+
+    it('should treat the operand as a percentage of the first operand for + and -', () => {
+      calc.appendNumber('200');
+      calc.chooseOperation('+');
+      calc.appendNumber('10');
+      calc.percent();
+      expect(calc.getDisplayValue()).toBe('20');
+      expect(calc.getExpressionValue()).toBe('200 + 20');
+
+      calc.compute();
+      expect(calc.getDisplayValue()).toBe('220');
+
+      calc.clear();
+      calc.appendNumber('200');
+      calc.chooseOperation('-');
+      calc.appendNumber('10');
+      calc.percent();
+      calc.compute();
+      expect(calc.getDisplayValue()).toBe('180');
+    });
+
+    it('should treat the operand as a plain fraction for * and /', () => {
+      calc.appendNumber('200');
+      calc.chooseOperation('*');
+      calc.appendNumber('10');
+      calc.percent();
+      calc.compute();
+      expect(calc.getDisplayValue()).toBe('20');
+
+      calc.clear();
+      calc.appendNumber('200');
+      calc.chooseOperation('/');
+      calc.appendNumber('50');
+      calc.percent();
+      calc.compute();
+      expect(calc.getDisplayValue()).toBe('400');
+    });
+
+    it('should keep a percent operand when chaining into another operation', () => {
+      calc.appendNumber('200');
+      calc.chooseOperation('+');
+      calc.appendNumber('10');
+      calc.percent();
+      calc.chooseOperation('+'); // Evaluates 200 + 20 automatically
+      expect(calc.getDisplayValue()).toBe('220');
+      expect(calc.getExpressionValue()).toBe('220 +');
+
+      calc.appendNumber('5');
+      calc.compute();
+      expect(calc.getDisplayValue()).toBe('225');
+    });
+
+    it('should replace a percent operand when a new number is typed', () => {
+      calc.appendNumber('200');
+      calc.chooseOperation('+');
+      calc.appendNumber('10');
+      calc.percent();
+      calc.appendNumber('5');
+      expect(calc.getExpressionValue()).toBe('200 + 5');
+
+      calc.compute();
+      expect(calc.getDisplayValue()).toBe('205');
+    });
+
+    it('should avoid floating-point noise', () => {
+      calc.appendNumber('7');
+      calc.percent();
+      expect(calc.getDisplayValue()).toBe('0.07');
+    });
+
+    it('should leave the Error state alone', () => {
+      calc.appendNumber('5');
+      calc.chooseOperation('/');
+      calc.appendNumber('0');
+      calc.compute();
+      calc.percent();
+      expect(calc.getDisplayValue()).toBe('Error');
+    });
   });
 
   describe('Basic Operations', () => {

@@ -51,4 +51,39 @@ describe('CalculatorUI Integration', () => {
     window.dispatchEvent(new KeyboardEvent('keydown', {key: '5'}));
     expect(primaryDisplay?.textContent).toBe('5');
   });
+
+  it('should apply percent from the keyboard', () => {
+    const primaryDisplay = document.querySelector('[data-testid="display-primary"]');
+
+    window.dispatchEvent(new KeyboardEvent('keydown', {key: '5'}));
+    window.dispatchEvent(new KeyboardEvent('keydown', {key: '%'}));
+    expect(primaryDisplay?.textContent).toBe('0.05');
+  });
+
+  it('should publish each display\'s text length so the stylesheet can scale it to fit', () => {
+    const primaryDisplay = document.querySelector('[data-testid="display-primary"]') as HTMLElement;
+    const secondaryDisplay = document.querySelector('[data-testid="display-secondary"]') as HTMLElement;
+    const btn7 = document.querySelector('[data-testid="btn-7"]') as HTMLButtonElement;
+    const btnPlus = document.querySelector('[data-testid="btn-plus"]') as HTMLButtonElement;
+
+    btn7.click();
+    btn7.click();
+    btn7.click();
+    expect(primaryDisplay.style.getPropertyValue('--display-length')).toBe('3');
+
+    btnPlus.click();
+    expect(secondaryDisplay.style.getPropertyValue('--display-length')).toBe('5');
+  });
+
+  it('should never publish a zero length, which would divide by zero in the stylesheet', () => {
+    const secondaryDisplay = document.querySelector('[data-testid="display-secondary"]') as HTMLElement;
+    const buttons = ['btn-7', 'btn-plus', 'btn-3', 'btn-equals'];
+
+    buttons.forEach((testId) => {
+      (document.querySelector(`[data-testid="${testId}"]`) as HTMLButtonElement).click();
+    });
+
+    expect(secondaryDisplay.textContent).toBe('');
+    expect(secondaryDisplay.style.getPropertyValue('--display-length')).toBe('1');
+  });
 });

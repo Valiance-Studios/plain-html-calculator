@@ -34,6 +34,9 @@ export class CalculatorUI {
       this.handleInput(target.dataset.type, target.value);
     });
 
+    // iOS Safari only applies :active styles once a touch listener exists on the page.
+    document.addEventListener('touchstart', () => {}, {passive: true});
+
     window.addEventListener('keydown', (event: KeyboardEvent) => {
       const mappedInput = this.mapKeyboardToInput(event);
       if (mappedInput) {
@@ -67,6 +70,8 @@ export class CalculatorUI {
           this.calculator.compute();
         } else if (value === 'invert-sign') {
           this.calculator.invertSign();
+        } else if (value === 'percent') {
+          this.calculator.percent();
         }
         break;
       }
@@ -89,6 +94,10 @@ export class CalculatorUI {
       return {type: 'operator', value: key};
     }
 
+    if (key === '%') {
+      return {type: 'action', value: 'percent'};
+    }
+
     if (key === 'Enter' || key === '=') {
       return {type: 'action', value: 'calculate'};
     }
@@ -105,7 +114,15 @@ export class CalculatorUI {
   }
 
   private updateDisplay(): void {
-    this.primaryDisplay.textContent = this.calculator.getDisplayValue();
-    this.secondaryDisplay.textContent = this.calculator.getExpressionValue();
+    this.renderDisplayText(this.primaryDisplay, this.calculator.getDisplayValue());
+    this.renderDisplayText(this.secondaryDisplay, this.calculator.getExpressionValue());
+  }
+
+  /**
+   * Publishes the text length alongside the text so the stylesheet can scale it to fit.
+   */
+  private renderDisplayText(element: HTMLElement, text: string): void {
+    element.textContent = text;
+    element.style.setProperty('--display-length', String(Math.max(text.length, 1)));
   }
 }

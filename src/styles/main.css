@@ -1,29 +1,53 @@
+:root {
+  /* Theme */
+  --color-page: #313030;
+  --color-shell: #a8a8a8;
+  --color-display-bezel: #1e1e1e;
+  --color-display: #5e5e5e;
+  --color-text: #ffffff;
+  --color-text-muted: #a0a0a0;
+  --color-key-standard: #2b2b2b;
+  --color-key-standard-hover: #3a3a3a;
+  --color-key-standard-active: #2e2e2e;
+  --color-key-operator: #ff9500;
+  --color-key-operator-hover: #e68a00;
+  --color-key-operator-active: #cc7a00;
+
+  /* Layout: overridden per presentation in the media queries below */
+  --edge: 15px;
+  --key-gap: 10px;
+  --key-font-size: 1.5em;
+  --display-primary-size: 2.5rem;
+  --display-secondary-size: 0.95rem;
+}
+
 body {
-  background-color: #313030;
+  background-color: var(--color-page);
   display: flex;
   justify-content: center;
 }
 
 .calculator-wrapper {
-  background-color: #a8a8a8;
+  background-color: var(--color-shell);
   border-radius: 5px;
   width: 500px;
 }
 
 .calculator-top {
-  background-color: #1e1e1e;
-  padding: 15px;
+  background-color: var(--color-display-bezel);
+  padding: var(--edge);
   height: 100px;
   border: none;
   border-radius: 5px;
 }
 
 .calculator-display {
+  container-type: inline-size; /* Lets the text below size itself against the display's width */
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
   align-items: flex-end;
-  background-color: #5e5e5e;
+  background-color: var(--color-display);
   border-radius: 8px;
   padding: 12px 16px;
   min-height: 100px;
@@ -31,35 +55,38 @@ body {
   overflow: hidden;
 }
 
+/*
+ * Text shrinks below its preferred size once it would no longer fit on one line.
+ * --display-length is the character count, set by CalculatorUI. 0.6 is a
+ * deliberately generous estimate of a character's width in em.
+ */
 .display-secondary {
-  color: #a0a0a0;
-  font-size: 0.95rem;
+  color: var(--color-text-muted);
+  font-size: min(var(--display-secondary-size), 100cqi / (var(--display-length, 1) * 0.6));
   min-height: 1.25rem; /* Reserves space so layout doesn't collapse when empty */
   margin-bottom: 4px;
-  word-break: break-all;
   white-space: nowrap;
 }
 
 .display-primary {
-  color: #ffffff;
-  font-size: 2.5rem;
+  color: var(--color-text);
+  font-size: min(var(--display-primary-size), 100cqi / (var(--display-length, 1) * 0.6));
   font-weight: 600;
   line-height: 1.1;
-  word-break: break-all;
   white-space: nowrap;
 }
 
 .calculator-bottom {
-  background-color: #a8a8a8;
+  background-color: var(--color-shell);
   border-radius: 5px;
   height: 400px;
-  padding: 15px;
+  padding: var(--edge);
 }
 
 .calculator-keys-wrapper {
   height: inherit;
   display: grid;
-  gap: 10px;
+  gap: var(--key-gap);
   grid-template-columns: repeat(6, 1fr);
   grid-template-rows: repeat(4, 1fr);
   grid-template-areas:
@@ -70,32 +97,141 @@ body {
 }
 
 .btn {
-  color: #ffffff;
+  color: var(--color-text);
   border: none;
   border-radius: 5px;
   padding: 10px;
-  font-size: 1.5em;
+  font-size: var(--key-font-size);
   cursor: pointer;
+  touch-action: manipulation; /* Rapid taps should register as keys, not double-tap zoom */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
 
   &.standard {
-    background-color: #2b2b2b;
-  }
-
-  &.standard:hover {
-    background-color: #3a3a3a;
-  }
-  &.standard:active {
-    background-color: #2e2e2e;
+    background-color: var(--color-key-standard);
   }
 
   &.operator {
-    background-color: #ff9500;
+    background-color: var(--color-key-operator);
   }
 
-  &.operator:hover {
-    background-color: #e68a00;
+  /* Touch screens would otherwise leave the hover colour stuck on the last key tapped */
+  @media (hover: hover) {
+    &.standard:hover {
+      background-color: var(--color-key-standard-hover);
+    }
+
+    &.operator:hover {
+      background-color: var(--color-key-operator-hover);
+    }
   }
+
+  &.standard:active {
+    background-color: var(--color-key-standard-active);
+  }
+
   &.operator:active {
-    background-color: #cc7a00;
+    background-color: var(--color-key-operator-active);
+  }
+}
+
+/* Without a hover state to contrast with, a press has to stand out from the resting key */
+@media (hover: none) {
+  :root {
+    --color-key-standard-active: #4a4a4a;
+  }
+}
+
+/* Compact: the calculator fills the viewport whenever the 500x560 card wouldn't fit */
+@media (max-width: 540px), (max-height: 580px) {
+  body {
+    margin: 0;
+    height: 100vh;
+    height: 100dvh;
+    overscroll-behavior: none;
+  }
+
+  .calculator-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    border-radius: 0;
+  }
+
+  .calculator-top,
+  .calculator-bottom {
+    border-radius: 0;
+    height: auto;
+    box-sizing: border-box;
+    padding-inline: max(var(--edge), env(safe-area-inset-left)) max(var(--edge), env(safe-area-inset-right));
+  }
+
+  .calculator-top {
+    display: flex;
+    padding-block: max(var(--edge), env(safe-area-inset-top)) var(--edge);
+  }
+
+  .calculator-display {
+    flex: 1;
+  }
+
+  .calculator-bottom {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    padding-block: var(--edge) max(var(--edge), env(safe-area-inset-bottom));
+  }
+
+  .calculator-keys-wrapper {
+    flex: 1;
+    height: auto;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-rows: repeat(4, minmax(0, 1fr));
+  }
+
+  .btn {
+    min-height: 0;
+    padding: 0;
+  }
+}
+
+/* Portrait: four thumb-sized columns, with a taller display above them */
+@media (max-width: 540px) {
+  :root {
+    --edge: 10px;
+    --key-font-size: 1.75rem;
+    --display-primary-size: min(3.5rem, 9dvh);
+    --display-secondary-size: 1.125rem;
+  }
+
+  .calculator-top {
+    flex: 0 0 28%;
+  }
+
+  .calculator-keys-wrapper {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-rows: repeat(6, minmax(0, 1fr));
+    grid-template-areas:
+    "all-clear single-delete invert-sign operator-percent"
+    "num-7 num-8 num-9 operator-divide"
+    "num-4 num-5 num-6 operator-multiply"
+    "num-1 num-2 num-3 operator-minus"
+    "num-0 num-00 num-decimal operator-plus"
+    "operator-equals operator-equals operator-equals operator-equals";
+  }
+}
+
+/* Landscape: keeps the six-column grid and gives height back to the keys */
+@media (min-width: 541px) and (max-height: 580px) {
+  :root {
+    --edge: 8px;
+    --key-gap: 6px;
+    --display-primary-size: 2rem;
+  }
+
+  .calculator-display {
+    min-height: 72px;
+    padding-block: 6px;
   }
 }

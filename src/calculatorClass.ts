@@ -8,6 +8,7 @@ export class Calculator {
   private isEvaluated: boolean = false; // Tracks if '=' was just pressed
   private lastOperation: Operation = null;
   private lastOperand: number | null = null;
+  private isPercentApplied: boolean = false; // The second operand came from '%', not typed digits
 
   constructor() {
     this.clear();
@@ -21,12 +22,14 @@ export class Calculator {
     this.lastOperand = null;
     this.shouldResetScreen = false;
     this.isEvaluated = false;
+    this.isPercentApplied = false;
   }
 
   public delete(): void {
     if (this.shouldResetScreen) return;
 
-    if (this.currentOperand.length === 1 || this.currentOperand === 'Error') {
+    // A lone digit, with or without its sign, has nothing left once removed
+    if (/^-?.$/.test(this.currentOperand) || this.currentOperand === 'Error') {
       this.currentOperand = '0';
       return;
     }
@@ -36,16 +39,17 @@ export class Calculator {
 
   public appendNumber(numberString: string): void {
     if (this.currentOperand === 'Error' || this.shouldResetScreen) {
-      this.currentOperand = numberString === '.' ? '0.' : numberString;
+      this.currentOperand = '0';
       this.shouldResetScreen = false;
-      return;
+      this.isPercentApplied = false;
     }
 
     // Prevent multiple decimals
     if (numberString === '.' && this.currentOperand.includes('.')) return;
 
     if (this.currentOperand === '0' && numberString !== '.') {
-      this.currentOperand = numberString;
+      // Multi-digit keys like '00' must not leave leading zeros behind
+      this.currentOperand = numberString.replace(/^0+(?=\d)/, '');
     } else {
       this.currentOperand += numberString;
     }
@@ -55,7 +59,7 @@ export class Calculator {
     if (this.currentOperand === 'Error') return;
 
     // Chain operations if an operation is already queued up (e.g., 5 + 5 +)
-    if (this.activeOperation !== null && !this.shouldResetScreen) {
+    if (this.activeOperation !== null && this.hasSecondOperand()) {
       this.compute();
     }
 
@@ -69,6 +73,8 @@ export class Calculator {
 
   public compute(): void {
     if (this.currentOperand === 'Error') return;
+
+    this.isPercentApplied = false;
 
     let prev = parseFloat(this.previousOperand);
     let current = parseFloat(this.currentOperand);
@@ -108,12 +114,34 @@ export class Calculator {
         return;
     }
 
-    // Fix floating point issues (e.g., 0.1 + 0.2 = 0.30000000000000004 -> 0.3)
-    this.currentOperand = String(Math.round((result + Number.EPSILON) * 1e12) / 1e12);
+    this.currentOperand = this.formatResult(result);
     this.previousOperand = '';
     this.activeOperation = null;
     this.shouldResetScreen = true;
     this.isEvaluated = true; // Mark evaluation complete
+  }
+
+  /**
+   * Converts the current number from a percentage. After + or - it is taken as a
+   * percentage of the first operand (200 + 10% adds 20); otherwise it is simply
+   * divided by 100 (50% is 0.5, and 200 x 10% multiplies by 0.1).
+   */
+  public percent(): void {
+    if (this.currentOperand === 'Error') return;
+
+    const fraction = parseFloat(this.currentOperand) / 100;
+
+    if (this.activeOperation === null) {
+      this.currentOperand = this.formatResult(fraction);
+      this.isEvaluated = true;
+    } else {
+      const isRelative = this.activeOperation === '+' || this.activeOperation === '-';
+      const result = isRelative ? parseFloat(this.previousOperand) * fraction : fraction;
+      this.currentOperand = this.formatResult(result);
+      this.isPercentApplied = true;
+    }
+
+    this.shouldResetScreen = true;
   }
 
   public invertSign(): void {
@@ -142,7 +170,7 @@ export class Calculator {
       const symbol = this.getSymbol(this.activeOperation);
 
       // If the user started entering the second number, append it to the expression
-      if (!this.shouldResetScreen) {
+      if (this.hasSecondOperand()) {
         return `${this.previousOperand} ${symbol} ${this.currentOperand}`;
       }
 
@@ -157,6 +185,17 @@ export class Calculator {
 
     // State 3: Entry of the very first number (e.g., "1234")
     return this.currentOperand;
+  }
+
+  private hasSecondOperand(): boolean {
+    return !this.shouldResetScreen || this.isPercentApplied;
+  }
+
+  /**
+   * Fixes floating point issues (e.g., 0.1 + 0.2 = 0.30000000000000004 -> 0.3).
+   */
+  private formatResult(value: number): string {
+    return String(Math.round((value + Number.EPSILON) * 1e12) / 1e12);
   }
 
   private getSymbol(op: Operation): string {
