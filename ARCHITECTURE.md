@@ -113,3 +113,17 @@ These are deliberate choices, not oversights:
 - **A value directly before `(` multiplies the group**, so `2(3 + 4)` is `14`.
 - **`DEL` only edits a typed number.** It can't remove an opened parenthesis, which `AC` clears or `=` closes.
 - **The view isn't remembered** and resets to basic on reload. The angle unit survives `AC` and also resets on reload.
+
+## Deployment
+
+The site is static files on Firebase Hosting, with no Firebase SDK, Authentication, or database in the app. `npm run deploy` runs from a developer's machine using their own Firebase login, so no credentials are stored in the repository.
+
+```mermaid
+flowchart LR
+  source["Source"] -- "npm run deploy:<br/>lint, test, build" --> dist["dist/"]
+  dist -- "firebase deploy --only hosting" --> site["vs-valiance-studios-dev-calculator<br/>site"]
+  project["vs-valiance-studios-dev<br/>project"] -. "hosts this and other sites" .-> site
+  site -- "HTTPS" --> visitors["Public visitors"]
+```
+
+The project hosts other sites too, so `hosting.site` in `firebase.json` must stay set. Without it, a deploy targets the project's default site. `.firebaserc` selects the project.
